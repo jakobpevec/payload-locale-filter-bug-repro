@@ -9,6 +9,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import {Pages} from "@/collections/Pages";
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -20,7 +21,27 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  localization:{
+    locales:[
+      {label: 'Slovenščina', code: 'sl'},
+      {label: 'Angleščina', code: 'en'},
+      {label: 'Hrvaščina', code: 'hr'},
+    ],
+    defaultLocale:"en",
+    filterAvailableLocales: async ({req, locales}) => {
+      const {user, locale: currentLocale} = req;
+      if (!user) return locales;
+
+
+      const userManagedLocales:any = user?.localeManager;
+
+      return locales.filter((locale) => {
+        // @ts-ignore
+        return userManagedLocales?.includes(locale.code)
+      })
+    }
+  },
+  collections: [Pages,Users, Media],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
